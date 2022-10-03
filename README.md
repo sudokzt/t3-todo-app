@@ -1,6 +1,6 @@
-# Create T3 App
+# Create TODO App
 
-This is an TODO App.
+This is a TODO App.
 create by [T3](https://github.com/t3-oss/create-t3-app)
 
 # Demo
