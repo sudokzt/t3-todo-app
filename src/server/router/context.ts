@@ -1,4 +1,5 @@
 // src/server/router/context.ts
+import { Prisma, PrismaClient } from "@prisma/client";
 import * as trpc from "@trpc/server";
 import * as trpcNext from "@trpc/server/adapters/next";
 import { Session } from "next-auth";
@@ -9,11 +10,22 @@ type CreateContextOptions = {
   session: Session | null;
 };
 
+export type CreateContextInner = {
+  session: Session | null;
+  prisma: PrismaClient<
+    Prisma.PrismaClientOptions,
+    never,
+    Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+  >;
+};
+
 /** Use this helper for:
  * - testing, where we dont have to Mock Next.js' req/res
  * - trpc's `createSSGHelpers` where we don't have req/res
  **/
-export const createContextInner = async (opts: CreateContextOptions) => {
+export const createContextInner = async (
+  opts: CreateContextOptions
+): Promise<CreateContextInner> => {
   return {
     session: opts.session,
     prisma,
@@ -25,12 +37,14 @@ export const createContextInner = async (opts: CreateContextOptions) => {
  * @link https://trpc.io/docs/context
  **/
 export const createContext = async (
-  opts: trpcNext.CreateNextContextOptions,
+  opts: trpcNext.CreateNextContextOptions
 ) => {
   const { req, res } = opts;
 
   // Get the session from the server using the unstable_getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
+
+  console.info("login user: ", session?.user ?? "unknown user");
 
   return await createContextInner({
     session,
